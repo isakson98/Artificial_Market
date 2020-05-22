@@ -1,4 +1,4 @@
-#FAKE MARKET
+# FAKE MARKET
 
 This project imitates having a stock exchnage and different participants interacting depending on the price action of the stock
 
