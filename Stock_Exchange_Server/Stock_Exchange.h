@@ -3,7 +3,7 @@
 This is the server for the project. *It is a stock exchange for one stock.
 There will be one stock, which all the participants are going to trade. 
 
-SINGLE FORMAT FOR THE ORDER -> "price buy/sell price userID" -> separated by spaces
+SINGLE FORMAT FOR THE ORDER -> "price buy/sell price" -> separated by spaces
 
 
 *could be interesting to explore multiple for complexity reasons, but that is not my goal right now
@@ -43,24 +43,30 @@ private:
     //function will update quotes given the received order
     int m_Update_Quotes(const std::string& a_new_order);
 
+    //compare two maps for transaction
+    template <typename Map>
+    bool key_compare (Map const &lhs, Map const &rhs);
+
     //function will compare its first orders and make a sale if they match
     int m_Make_Transaction();
+
+    void m_Show_two_maps();
 
     //need a struct which will store -> price name buy/sell price
     struct Quote_Info {
         float price;
         int size;
-        std::string userID;
-        std::string ticker;
+        int userID; //not sure what will be the data type for useID, will be a socket_client number from receving 
+        //std::string ticker;
         
     };
 
     //ds to store struct with bid
     //greater at the end means it will be stored in reverse order
-    std::map<float, std::vector<Quote_Info>, std::greater<float>> bid_quotes;
+    std::map<float, std::vector<Quote_Info>, std::greater<float>> m_bid_quotes;
 
     //ds to store struct with asks
-    std::map<float, std::vector<Quote_Info>> ask_quotes;
+    std::map<float, std::vector<Quote_Info>> m_ask_quotes;
 
 
 };

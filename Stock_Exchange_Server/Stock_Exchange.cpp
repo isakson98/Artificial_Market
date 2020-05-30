@@ -107,7 +107,7 @@ int Stock_Exchange::Operate()
             cerr << "There was a connection issue " << endl;
             break;
         }
-        if(bytesRecv == 0)
+        else if(bytesRecv == 0)
         {
             cout << "client disconnceted" << endl;
             break;
@@ -126,12 +126,21 @@ int Stock_Exchange::Operate()
         //RESEND MESSAGE
         // ^ just realized I have to send updates to every participant in the market.
         // ^ so i'll be sending market flow SEPARATELY from transaction results
+        //send result of the transaction to one client
         send(m_clientSocket, buf, bytesRecv + 1, 0);
+
+
+        //^ also have to send confirmation to the opposite side of the trade
+
+        //^ send updates results to every client in a loop
+        // have to store m_clientSocket's in array as private ds to do that
+
     }
 
     close(m_clientSocket);
 
 }
+
 
 
 /*
@@ -152,21 +161,22 @@ int Stock_Exchange::m_Update_Quotes(const string& a_new_order)
 
     ins >> price >> size >> decision >> userID;
 
+    //structure to store information about the order
     Quote_Info order;
     order.price = stof(price);
     order.size = stoi(size);
-    order.userID = stoi(userID); // ^ this will probably have to store ip address of the client somehow
+    order.userID = m_clientSocket; // ^ this will probably have to store ip address of the client somehow
 
 
     //this is a buy order, I will add a structure to bid map
     if (decision == "1")
     {
-        bid_quotes[order.price].push_back(order);
+        m_bid_quotes[order.price].push_back(order);
     }
     //this is a sell order, I will add a structure to ask map
     else if (decision == "0")
     {
-        ask_quotes[order.price].push_back(order);
+        m_ask_quotes[order.price].push_back(order);
     }
     
 
@@ -177,6 +187,28 @@ int Stock_Exchange::m_Update_Quotes(const string& a_new_order)
     return 0;
 }
 
+
+
+// /*
+// purpose:
+
+// template used to compare two maps (bid and ask) 
+// to see whether their first values are equal, or ask less than bid 
+// in both cases make a transaction
+
+// */
+// template <typename Map>
+// bool Stock_Exchange::key_compare (Map const &lhs, Map const &rhs) 
+// {
+
+//     auto pred = [] (decltype(*lhs.begin()) ask, decltype(a) bid)
+//                    { return ask.first <= bid.first; };
+
+//     //return std::equal(lhs.begin(), lhs.end(), rhs.begin(), pred);
+// }
+
+
+
 /*
 purpose:
 
@@ -185,8 +217,110 @@ this function makes comparison of two private maps, and makes a transaction if a
 */
 int Stock_Exchange::m_Make_Transaction()
 {   
+    
+    // brute force -> super ugly and probably inefficient. have to probably rethink how i store these.
+    // edit -> this is the ugliest code i have ever written, probably topping my streamer filter
+
+    //iterate through bid prices
+    for (auto & b : m_bid_quotes)
+    {  
+        // iterate through ask prices
+        for (auto & a : m_ask_quotes)
+        {
+            // if bid is greater or equal, there needs to be a transaction
+            if (b.first >= a.first)
+            {
+                // iterate through individual orders on the same bid price
+                for (auto & bid_order : b.second)
+                {
+                    // at the same time iterate through all ask order of the same price
+                    for (auto & ask_order : a.second)
+                    {  
+                        // sell or buy whichever one is smaller
+                        string s_bid_order = "Bought ";
+                        string s_ask_order = "Sold ";
+
+                        // if bid order is bigger 
+                        if (bid_order.size >= ask_order.size)
+                        {
+                            bid_order.size = bid_order.size - ask_order.size;
+
+                            
+                            s_bid_order += to_string(ask_order.size);
+                            s_ask_order += to_string(ask_order.size);
+
+                            s_bid_order += " at " + to_string(ask_order.price) + " \r\n";
+                            s_ask_order += " at " + to_string(ask_order.price) + " \r\n";
+
+                            // send confirmation to clients
+                            send(bid_order.userID, s_bid_order.data(), s_bid_order.size(), 0);
+                            send(ask_order.userID, s_ask_order.data(), s_ask_order.size(), 0);
+
+                            // if bid is zero, the order is complete and i can delete this cell
+                            if (bid_order.size == 0)
+                            {
+                                b.second.erase(b.second.begin());
+                            }
+
+                            //since bid is bigger, ask order will be executed fully, so it can be deleted.
+                            a.second.erase(a.second.begin());
+                            
+                        }
+                        // if ask order is bigger
+                        else 
+                        {
+
+                            ask_order.size = ask_order.size - bid_order.size;
+                            
+                            s_ask_order += to_string(bid_order.size);
+                            s_bid_order += to_string(bid_order.size);
+
+                            s_bid_order += " at " + to_string(ask_order.price) + " \r\n";
+                            s_ask_order += " at " + to_string(ask_order.price) + " \r\n";
+
+                            // send confirmation to clients
+                            send(bid_order.userID, s_bid_order.data(), s_bid_order.size(), 0);
+                            send(ask_order.userID, s_ask_order.data(), s_ask_order.size(), 0);
+
+                            // if bid is zero, the order is complete and i can delete this cell
+                            if (ask_order.size == 0)
+                            {
+                                a.second.erase(a.second.begin());
+                            }
+
+                            //since ask is bigger, bid order will be executed fully, so it can be deleted.
+                            b.second.erase(b.second.begin());
+                           
+                        }
+                        
+                    
+                    }
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+    }
+    return 0;
+}
+
+
+
+/*
+purpose:
+
+this function shows two tables after each update
+
+*/
+void Stock_Exchange::m_Show_two_maps()
+{
     //iterating through a map
-    for (auto x : bid_quotes){
+    cout << "Bid Quotes" << endl;
+    for (auto x : m_bid_quotes)
+    {
         //iterating through a vector of structs of the same price
         for (auto z : x.second)
         {
@@ -195,4 +329,15 @@ int Stock_Exchange::m_Make_Transaction()
         }
     }
 
+    cout << "Ask Quotes" << endl;
+    //iterating through a map
+    for (auto x : m_ask_quotes)
+    {
+        //iterating through a vector of structs of the same price
+        for (auto z : x.second)
+        {
+            //printing components of one order
+            cout << z.price << " " << z.size << " " << z.userID << endl;
+        }
+    }
 }
