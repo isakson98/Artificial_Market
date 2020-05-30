@@ -249,8 +249,8 @@ int Stock_Exchange::m_Make_Transaction()
                             s_bid_order += to_string(ask_order.size);
                             s_ask_order += to_string(ask_order.size);
 
-                            s_bid_order += " at " + to_string(ask_order.price) + " \r\n";
-                            s_ask_order += " at " + to_string(ask_order.price) + " \r\n";
+                            s_bid_order += " at " + to_string(bid_order.price) + " \r\n";
+                            s_ask_order += " at " + to_string(bid_order.price) + " \r\n";
 
                             // send confirmation to clients
                             send(bid_order.userID, s_bid_order.data(), s_bid_order.size(), 0);
