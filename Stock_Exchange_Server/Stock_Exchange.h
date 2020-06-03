@@ -25,7 +25,8 @@ SINGLE FORMAT FOR THE ORDER -> "price buy/sell price" -> separated by spaces
 #include <map>
 #include <vector>
 
-class Stock_Exchange {
+class Stock_Exchange 
+{
 
 public:
 
@@ -43,10 +44,6 @@ private:
     //function will update quotes given the received order
     int m_Update_Quotes(const std::string& a_new_order);
 
-    //compare two maps for transaction
-    template <typename Map>
-    bool key_compare (Map const &lhs, Map const &rhs);
-
     //function will compare its first orders and make a sale if they match
     int m_Make_Transaction();
 
@@ -56,7 +53,7 @@ private:
     struct Quote_Info {
         float price;
         int size;
-        int userID; //not sure what will be the data type for useID, will be a socket_client number from receving 
+        int userID; // a socket_client number from recv function
         //std::string ticker;
         
     };

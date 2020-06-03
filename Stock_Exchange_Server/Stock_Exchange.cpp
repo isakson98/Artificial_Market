@@ -1,5 +1,7 @@
 #include "Stock_Exchange.h"
+
 using namespace std;
+
 
 /*
 purpose:
@@ -25,6 +27,7 @@ Stock_Exchange::Stock_Exchange()
     sockaddr_in hint; // barebone server
     hint.sin_family = AF_INET;
     hint.sin_port = htons(54000); //convert to little int, host to little short
+
     //binding information
     inet_pton(AF_INET, "0.0.0.0", &hint.sin_addr); //converts number to an array of intergers (digits)
 
@@ -129,12 +132,6 @@ int Stock_Exchange::Operate()
         //send result of the transaction to one client
         send(m_clientSocket, buf, bytesRecv + 1, 0);
 
-
-        //^ also have to send confirmation to the opposite side of the trade
-
-        //^ send updates results to every client in a loop
-        // have to store m_clientSocket's in array as private ds to do that
-
     }
 
     close(m_clientSocket);
@@ -178,34 +175,9 @@ int Stock_Exchange::m_Update_Quotes(const string& a_new_order)
     {
         m_ask_quotes[order.price].push_back(order);
     }
-    
-
-    // ^ how will the server remember to execute an order of a participant?
-    // server needs to "remember" whose order was at which price, whithout showing it to the participants.
-    // as price hits, the server must execute this order 
 
     return 0;
 }
-
-
-
-// /*
-// purpose:
-
-// template used to compare two maps (bid and ask) 
-// to see whether their first values are equal, or ask less than bid 
-// in both cases make a transaction
-
-// */
-// template <typename Map>
-// bool Stock_Exchange::key_compare (Map const &lhs, Map const &rhs) 
-// {
-
-//     auto pred = [] (decltype(*lhs.begin()) ask, decltype(a) bid)
-//                    { return ask.first <= bid.first; };
-
-//     //return std::equal(lhs.begin(), lhs.end(), rhs.begin(), pred);
-// }
 
 
 
