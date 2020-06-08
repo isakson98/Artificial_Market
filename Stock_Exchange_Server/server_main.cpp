@@ -1,11 +1,10 @@
 #include "Stock_Exchange.h"
-#include <iostream>
-using namespace std;
 
 int main()
 {
-    std::cout << "print" << std::endl;
-    Stock_Exchange one;
-    std::cout << "print" << std::endl;
+    //since there is only one exchange, its a singleton class, and the objec is named appropriately
+    Stock_Exchange singleton;
+    singleton.Operate();
+
     return 0;
 }

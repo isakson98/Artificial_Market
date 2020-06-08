@@ -2,3 +2,7 @@ Stock_Exchange_Server/.vscode/launch.json
 Stock_Exchange_Server/.vscode/settings.json
 Stock_Exchange_Server/.vscode/tasks.json
 Stock_Exchange_Server/main
+Stock_Exchange_Server/main_s
+Stock_Exchange_Client/.vscode/launch.json
+Stock_Exchange_Client/.vscode/settings.json
+Stock_Exchange_Client/.vscode/tasks.json
