@@ -2,6 +2,7 @@
 
 using namespace std;
 
+// * issue. I need to continue listening to new users even after initialization
 
 /*
 purpose:
@@ -27,9 +28,8 @@ Stock_Exchange::Stock_Exchange()
     sockaddr_in hint; // barebone server
     hint.sin_family = AF_INET;
     hint.sin_port = htons(54000); //convert to little int, host to little short
+    hint.sin_addr.s_addr = INADDR_ANY; // REPLACEMENT FOR initial "O.O.O.O"
 
-    //binding information
-    inet_pton(AF_INET, "0.0.0.0", &hint.sin_addr); //converts number to an array of intergers (digits)
 
     if(bind(listening, (sockaddr*)&hint, sizeof(hint)) == -1)
     {
@@ -131,6 +131,8 @@ int Stock_Exchange::Operate()
         // ^ so i'll be sending market flow SEPARATELY from transaction results
         //send result of the transaction to one client
         send(m_clientSocket, buf, bytesRecv + 1, 0);
+
+        m_Show_two_maps();
 
     }
 

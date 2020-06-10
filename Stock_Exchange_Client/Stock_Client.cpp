@@ -20,13 +20,14 @@ Stock_Client::Stock_Client()
 
     //	Create a hint structure for the server we're connecting with
     int port = 54000;
-    
-    string ipAddress = "127.0.0.1";
+
+    // host name of the server
+    string server_name = "DESKTOP-Q5ATTSU";
 
     sockaddr_in hint;
     hint.sin_family = AF_INET;
     hint.sin_port = htons(port);
-    inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr);
+    inet_pton(AF_INET, server_name.c_str(), &hint.sin_addr);
 
     //	Connect to the server on the socket
     int connectRes = connect(sock, (sockaddr*)&hint, sizeof(hint));
